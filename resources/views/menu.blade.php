@@ -229,10 +229,10 @@
 
         .message-time {
             font-size: 10px;
-            color: #ccc;
+            color: black;
             position: absolute;
             bottom: 2px;
-            right: 10px;
+            right: 5px;
         }
 
         #chat-header {
@@ -404,7 +404,7 @@
 
     <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script>
         const userId = {{ Auth::id() }};
         let chatOpen = false;
@@ -465,9 +465,8 @@
             chatInput.disabled = !selectedUserId;
             chatSendBtn.disabled = true;
             chatMessages.innerHTML = '';
-            if (selectedUserId) {
-              loadMessages()
-            }
+            loadMessages();
+            setInterval(loadMessages, 5000);
         });
 
         chatInput.addEventListener('input', () => {
@@ -483,15 +482,16 @@
             }
         });
 
-        function appendMessage(message, type, time) {
+        function appendMessage(message, type, timestamp) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', type);
             messageDiv.textContent = message;
 
-            if (time) {
+
+            if (timestamp) {
                 const timeSpan = document.createElement('span');
                 timeSpan.classList.add('message-time');
-                timeSpan.textContent = time;
+                timeSpan.textContent = moment(timestamp).format('DD-MM-yyyy HH:mm');
                 messageDiv.appendChild(timeSpan);
             }
 
@@ -507,7 +507,7 @@
                     data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
                     data.forEach(msg => {
                         const type = msg.user_emisor == userId ? 'sent' : 'received';
-                        appendMessage(msg.mensaje, type);
+                        appendMessage(msg.mensaje, type, msg.created_at);
                     })
                 })
                 .catch(error => {
