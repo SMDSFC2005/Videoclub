@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Bowlby+One+SC&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Bowlby+One+SC&display=swap"
+        rel="stylesheet" />
 
     <title>Menú</title>
     <style>
@@ -384,16 +385,15 @@
                     <!-- Radio buttons con la estructura correcta -->
                     <label class="radio-label">
                         Sí
-                        <input type="radio" name="{{ $key }}" value="1" class="radio-button"
-                            {{ old($key) == '1' ? 'checked' : '' }} required>
+                        <input type="radio" name="{{ $key }}" value="1" class="radio-button" {{ old($key) == '1' ? 'checked' : '' }} required>
                     </label>
                     <label class="radio-label">
                         No
-                        <input type="radio" name="{{ $key }}" value="0" class="radio-button"
-                            {{ old($key) == '0' ? 'checked' : '' }} required>
+                        <input type="radio" name="{{ $key }}" value="0" class="radio-button" {{ old($key) == '0' ? 'checked' : '' }} required>
                     </label><br>
 
-                    <textarea name="comentario_{{ $key }}" placeholder="Comentario adicional (opcional)">{{ old("comentario{$key}") }}</textarea><br><br>
+                    <textarea name="comentario_{{ $key }}"
+                        placeholder="Comentario adicional (opcional)">{{ old("comentario{$key}") }}</textarea><br><br>
                 @endforeach
 
                 <button type="submit" class="btn">Enviar</button>
@@ -466,7 +466,7 @@
             chatSendBtn.disabled = true;
             chatMessages.innerHTML = '';
             loadMessages();
-            setInterval(loadMessages, 5000);
+            setInterval(() => loadMessages(false), 5000);
         });
 
         chatInput.addEventListener('input', () => {
@@ -496,10 +496,9 @@
             }
 
             chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function loadMessages() {
+        function loadMessages(scrollToBottom = true) {
             if (!selectedUserId) return;
             fetch(`/mensajes/${userId}/${selectedUserId}`).then(response => response.json())
                 .then(data => {
@@ -508,7 +507,11 @@
                     data.forEach(msg => {
                         const type = msg.user_emisor == userId ? 'sent' : 'received';
                         appendMessage(msg.mensaje, type, msg.created_at);
-                    })
+                    });
+                    if (scrollToBottom) {
+                        // Esperamos a que el contenido se renderice antes de hacer scroll
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
                 })
                 .catch(error => {
                     console.error('Error al cargar mensajes:', error);
@@ -527,16 +530,16 @@
             appendMessage(message, 'sent', Date.now());
 
             fetch('/mensajes/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        mensaje: message,
-                        user_receptor: selectedUserId
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    mensaje: message,
+                    user_receptor: selectedUserId
                 })
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Error al enviar mensaje');
@@ -549,6 +552,8 @@
                 .catch(error => {
                     console.error(error);
                 });
+            // Al enviar un mensaje, vamos hacia el final del chat.
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Setup Pusher and Laravel Echo
