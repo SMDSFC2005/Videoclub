@@ -524,9 +524,7 @@
             chatInput.value = '';
             chatSendBtn.disabled = true;
 
-            const now = new Date();
-            const time = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            appendMessage(message, 'sent', time);
+            appendMessage(message, 'sent', Date.now());
 
             fetch('/mensajes/send', {
                     method: 'POST',

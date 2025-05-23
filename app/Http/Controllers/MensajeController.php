@@ -25,7 +25,8 @@ class MensajeController extends Controller
         ]);
 
         // Emitir el evento de broadcasting
-        broadcast(new MensajeEnviado($mensaje));  // Emitir el evento
+        //Al final no hemos utilizado el broadcast
+        //broadcast(new MensajeEnviado($mensaje));  // Emitir el evento
 
         return response()->json(['mensaje' => $mensaje], 200);
     }
